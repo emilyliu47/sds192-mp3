@@ -14,7 +14,7 @@ library(sf)
 
 ```{r, eval = FALSE}
 # check this out
-url <- "https://docs.digital.mass.gov/dataset/massgis-data-elevation-contours-1250000"
+url <- "http://download.massgis.digital.mass.gov/shapefiles/state/contours250k.zip"
 local_file <- basename(url)
 download.file(url, destfile = local_file)
 unzip(local_file, exdir = "contours250k")
@@ -30,7 +30,7 @@ Campsite requirements:
 
 ```{r}
 map <- leaflet() %>%
-  addTiles() %>%
+  addTiles()
   
 ```
 
