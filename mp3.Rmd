@@ -16,3 +16,25 @@ library(macleish)
 library(sf)
 ```
 
+```{r, eval = FALSE}
+# check this out
+url <- "https://docs.digital.mass.gov/dataset/massgis-data-elevation-contours-1250000"
+local_file <- basename(url)
+download.file(url, destfile = local_file)
+unzip(local_file, exdir = "contours250k")
+```
+
+Campsite requirements:
+- 0.5 miles from the parking area
+- within 200 feet of a stream or other source of water
+- in a different forest from the other 2 campsites
+- Relatively flat
+- At least 500 feet from any research area or any element of the Challenge course
+
+
+```{r}
+map <- leaflet() %>%
+  addTiles() %>%
+  
+```
+
