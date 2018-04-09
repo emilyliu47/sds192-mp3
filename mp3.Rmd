@@ -1,13 +1,9 @@
 ---
 title: "Mini-Project 3"
-author: "Emily Liu"
+author: "Emily Liu, Karina Lieb, and Alexis Kilayko"
 date: "April 9, 2018"
 output: html_document
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 ```{r}
 library(tidyverse)
