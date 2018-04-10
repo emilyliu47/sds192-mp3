@@ -26,6 +26,16 @@ list.files(dsn)
 contours <- read_sf(dsn)
 contours
 ```
+```{r}
+proj4_aea <- "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+```
+
+```{r}
+contours_4326 <- contours %>%
+  st_transform(4326)
+contours_inside <- macleish_layers[["boundary"]] %>%
+  st_intersection(contours_4326)
+```
 
 Campsite requirements:
 - 0.5 miles from the parking area
@@ -34,10 +44,80 @@ Campsite requirements:
 - Relatively flat
 - At least 500 feet from any research area or any element of the Challenge course
 
+```{r}
+# Create campsite points
+campsites_pt <- tribble(
+  ~point, ~lat, ~lon,
+  "Group Campsite", -72.678154, 42.450976,
+  "Remote Campsite", -72.674732, 42.458570
+)
+# Convert campsite points to shapefile
+campsites_sf <- campsites_pt %>%
+  st_as_sf(coords = c("lat", "lon"))
+```
 
 ```{r}
+# Create parking points
+parking_pt <- tribble(
+  ~point, ~lat, ~lon,
+  "Parking Lot", -72.680663, 42.448013 
+)
+
+# Convert parking points to shapefile
+parking_sf <- parking_pt %>%
+  st_as_sf(coords = c("lat", "lon"))
+
+# Create buffer zone around parking lot
+parking_bf <- parking_sf %>%
+  st_transform(proj4_aea) %>%
+  st_buffer(dist = 804.672) %>%
+  st_transform(crs = 4326)
+
+```
+```{r}
+# create streams buffer zones
+streams_bf <- macleish_layers[["streams"]] %>%
+  st_transform(proj4_aea) %>%
+  st_buffer(dist = 60.96) %>%
+  st_transform(4326)
+# create wetlands buffer zones
+wetlands_bf <- macleish_layers[["wetlands"]] %>%
+  st_transform(proj4_aea) %>%
+  st_buffer(dist = 60.96) %>%
+  st_transform(4326)
+# create research buffer zones
+research_bf <- macleish_layers[["research"]] %>%
+  st_transform(proj4_aea) %>%
+  st_buffer(dist = 152.4) %>%
+  st_transform(4326)
+# create challenge course buffer zones
+```
+
+
+```{r}
+# Make a leaflet map
 map <- leaflet() %>%
-  addTiles()
-  
+  addTiles() %>%
+  # macleish boundary lines
+  addPolylines(data = macleish_layers[["boundary"]], weight = 1) %>%
+  # macleish streams
+  addPolylines(data = macleish_layers[["streams"]], weight = 1, color = "blue") %>%
+  # contour lines
+  addPolylines(data = contours_inside, weight = 1, color = "black") %>%
+  # macleish wetlands
+  addPolygons(data = macleish_layers[["wetlands"]], color = "blue", opacity = 0.5) %>%
+  # draw stream buffer zones
+  addPolygons(data = streams_bf, color = "lightblue", opacity = 0.5) %>%
+  # draw wetlands buffer zones
+  addPolygons(data = wetlands_bf, color = "lightblue") %>%
+  addPolygons(data = research_bf, color = "lightgrey") %>%
+  # campsite markers
+  addMarkers(data = campsites_sf, popup = ~point, labelOptions = labelOptions(style = ("color" = "black"))) %>%
+  # parking lot marker
+  addMarkers(data = parking_sf, popup = ~point)
+
+
+
+map  
 ```
 
