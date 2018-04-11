@@ -19,12 +19,11 @@ local_file <- basename(url)
 download.file(url, destfile = local_file)
 unzip(local_file, exdir = "contours250k")
 ```
+
 ```{r}
 dsn <- path.expand("contours250k")
-dsn
 list.files(dsn)
 contours <- read_sf(dsn)
-contours
 ```
 
 Campsite requirements:
