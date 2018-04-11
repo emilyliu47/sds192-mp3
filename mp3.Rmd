@@ -14,15 +14,15 @@ library(sf)
 ```
 
 ```{r, eval = FALSE}
-# Download contour data
-url <- "http://download.massgis.digital.mass.gov/shapefiles/state/contours250k.zip"
-local_file <- basename(url)
-download.file(url, destfile = local_file)
-unzip(local_file, exdir = "contours250k")
-dsn <- path.expand("contours250k")
-dsn
-list.files(dsn)
-contours <- read_sf(dsn)
+# # Download contour data
+# url <- "http://download.massgis.digital.mass.gov/shapefiles/state/contours250k.zip"
+# local_file <- basename(url)
+# download.file(url, destfile = local_file)
+# unzip(local_file, exdir = "contours250k")
+# dsn <- path.expand("contours250k")
+# dsn
+# list.files(dsn)
+# contours <- read_sf(dsn)
 ```
 ```{r}
 # Additional coordinate system for buffers
@@ -31,10 +31,10 @@ proj4_aea <- "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y
 
 ```{r}
 # Limiting contour data to within Macleish area
-contours_4326 <- contours %>%
-  st_transform(4326)
-contours_inside <- macleish_layers[["boundary"]] %>%
-  st_intersection(contours_4326)
+# contours_4326 <- contours %>%
+#   st_transform(4326)
+# contours_inside <- macleish_layers[["boundary"]] %>%
+#   st_intersection(contours_4326)
 ```
 
 Campsite requirements:
@@ -88,10 +88,10 @@ parking_sf <- parking_pt %>%
   st_as_sf(coords = c("lat", "lon"))
 
 # Create buffer zone around parking lot
-parking_bf <- parking_sf %>%
-  st_transform(proj4_aea) %>%
-  st_buffer(dist = 804.672) %>%
-  st_transform(crs = 4326)
+# parking_bf <- parking_sf %>%
+#   st_transform(proj4_aea) %>%
+#   st_buffer(dist = 804.672) %>%
+#   st_transform(crs = 4326)
 
 parking_bf1 <- parking_sf %>%
   st_buffer(dist =  0.05)
@@ -130,7 +130,8 @@ map <- leaflet() %>%
   # macleish streams
   addPolylines(data = macleish_layers[["streams"]], weight = 1, color = "blue") %>%
   # contour lines
-  addPolylines(data = contours_inside, weight = 2, color = "black") %>%
+  #addPolylines(data = contours_inside, weight = 2, color = "black") %>%
+  addPolylines(data = macleish_layers[["contours_3m"]], weight = 2, color = "black") %>%
   # macleish wetlands
   addPolygons(data = macleish_layers[["wetlands"]], color = "blue", opacity = 0.5) %>%
   # draw stream buffer zones
@@ -141,15 +142,16 @@ map <- leaflet() %>%
   addPolygons(data = research_bf, color = "pink", fillColor = "transparent") %>%
   # draw challenge course buffer zones
   addPolygons(data = challenge_bf, color = "pink", fillColor = "transparent") %>%
-  addPolygons(data = white_pine, weight = 1, color = "pink") %>%
   # campsite markers
   addMarkers(data = campsites_sf, popup = ~point, labelOptions = labelOptions(style = ("color" = "black"))) %>%
+  # campsite forest
+  addPolygons(data = white_pine, weight = 1, color = "pink") %>%
   # parking lot marker
   addMarkers(data = parking_sf, popup = ~point) %>%
-  addPolygons(data = parking_bf1)
+  # draw parking lot buffer zone
+  addPolygons(data = parking_bf1, fillColor = "transparent")
 
 
 
 map  
 ```
-
