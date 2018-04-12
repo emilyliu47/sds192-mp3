@@ -4,13 +4,18 @@ author: "Emily Liu, Karina Lieb, and Alexis Kilayko"
 date: "April 9, 2018"
 output: html_document
 ---
+The mapview package is needed.
 
 ```{r}
+# Install package
+#install.packages("mapview")
+
 # Load libraries
 library(tidyverse)
 library(leaflet)
 library(macleish)
 library(sf)
+library(mapview)
 ```
 
 ```{r, eval = FALSE}
@@ -23,13 +28,6 @@ library(sf)
 # dsn
 # list.files(dsn)
 # contours <- read_sf(dsn)
-```
-```{r}
-# Additional coordinate system for buffers
-proj4_aea <- "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
-```
-
-```{r}
 # Limiting contour data to within Macleish area
 # contours_4326 <- contours %>%
 #   st_transform(4326)
@@ -37,8 +35,15 @@ proj4_aea <- "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y
 #   st_intersection(contours_4326)
 ```
 
+```{r}
+# Additional coordinate system for buffers
+proj4_aea <- "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+```
+
+
+
 Campsite requirements:
-- 0.5 miles from the parking area
+*- 0.5 miles from the parking area
 *- within 200 feet of a stream or other source of water
 *- in a different forest from the other 2 campsites
 - Relatively flat
@@ -70,6 +75,7 @@ leaflet() %>%
   addPolygons(data = forests, weight = 1, color = "green", popup = ~forest_type) %>%
   addMarkers(data = campsites_sf, popup = ~point, labelOptions = labelOptions(style = ("color" = "black")))
 
+# Create dataset that will only have that type of forest
 white_pine <- forests %>%
   filter(forest_type == "Old Field White Pine Forest")
 ```
@@ -83,12 +89,10 @@ parking_pt <- tribble(
   "Parking Lot", -72.680663, 42.448013 
 )
 
-# Convert parking points to shapefile
+# Convert parking points to shapefile and set coordinate system
 parking_sf <- parking_pt %>%
-  st_as_sf(coords = c("lat", "lon"))
-
-# Set the projection for the new shapefile
-proj4string(parking_sf) <- crs("+init=epsg:4326")
+  st_as_sf(coords = c("lat", "lon")) %>%
+  st_set_crs(4326)
 
 # Create buffer zone around parking lot
 parking_bf <- parking_sf %>%
@@ -96,26 +100,27 @@ parking_bf <- parking_sf %>%
   st_buffer(dist = 804.672) %>%
   st_transform(crs = 4326)
 
-parking_bf1 <- parking_sf %>%
-  st_buffer(dist =  0.001)
 ```
 
 ```{r}
-# create streams buffer zones
+# create streams buffer zones, 200 feet = 60.96 m
 streams_bf <- macleish_layers[["streams"]] %>%
   st_transform(proj4_aea) %>%
   st_buffer(dist = 60.96) %>%
   st_transform(4326)
+
 # create wetlands buffer zones
 wetlands_bf <- macleish_layers[["wetlands"]] %>%
   st_transform(proj4_aea) %>%
   st_buffer(dist = 60.96) %>%
   st_transform(4326)
-# create research buffer zones
+
+# create research buffer zones, 500 feet = 152.4 m
 research_bf <- macleish_layers[["research"]] %>%
   st_transform(proj4_aea) %>%
   st_buffer(dist = 152.4) %>%
   st_transform(4326)
+
 # create challenge course buffer zones
 challenge_bf <- macleish_layers[["challenge_courses"]] %>%
   st_transform(proj4_aea) %>%
@@ -125,7 +130,7 @@ challenge_bf <- macleish_layers[["challenge_courses"]] %>%
 
 
 ```{r}
-# Make a leaflet map with green zones being within and red zones being without
+# Make a leaflet map with green zones being our targets and pink/red zones are our avoid areas
 map <- leaflet() %>%
   addTiles() %>%
   # macleish boundary lines
@@ -133,7 +138,6 @@ map <- leaflet() %>%
   # macleish streams
   addPolylines(data = macleish_layers[["streams"]], weight = 1, color = "blue") %>%
   # contour lines
-  #addPolylines(data = contours_inside, weight = 2, color = "black") %>%
   addPolylines(data = macleish_layers[["contours_3m"]], weight = 2, color = "black") %>%
   # macleish wetlands
   addPolygons(data = macleish_layers[["wetlands"]], color = "blue", opacity = 0.5) %>%
@@ -148,13 +152,13 @@ map <- leaflet() %>%
   # campsite markers
   addMarkers(data = campsites_sf, popup = ~point, labelOptions = labelOptions(style = ("color" = "black"))) %>%
   # campsite forest
-  addPolygons(data = white_pine, weight = 1, color = "pink") %>%
+  addPolygons(data = white_pine, weight = 1, color = "red") %>%
   # parking lot marker
   addMarkers(data = parking_sf, popup = ~point) %>%
   # draw parking lot buffer zone
-  addPolygons(data = parking_bf1, fillColor = "transparent")
-
-
+  addPolygons(data = parking_bf, fillColor = "transparent") %>%
+  # add map tool that will display coordinates of point that mouse is over
+  addMouseCoordinates()
 
 map  
 ```
