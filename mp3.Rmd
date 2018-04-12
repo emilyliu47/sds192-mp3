@@ -73,7 +73,7 @@ leaflet() %>%
   addTiles() %>%
   addPolylines(data = macleish_layers[["boundary"]], weight = 1, color = "black") %>%
   addPolygons(data = forests, weight = 1, color = "green", popup = ~forest_type) %>%
-  addMarkers(data = campsites_sf, popup = ~point, labelOptions = labelOptions(style = ("color" = "black")))
+  addMarkers(data = campsites_sf, popup = ~point, labelOptions = labelOptions(style = ("color" = "red")))
 
 # Create dataset that will only have that type of forest
 white_pine <- forests %>%
@@ -150,13 +150,13 @@ map <- leaflet() %>%
   # draw challenge course buffer zones
   addPolygons(data = challenge_bf, color = "pink", fillColor = "transparent") %>%
   # campsite markers
-  addMarkers(data = campsites_sf, popup = ~point, labelOptions = labelOptions(style = ("color" = "black"))) %>%
+  addMarkers(data = campsites_sf, popup = ~point, labelOptions = labelOptions(color = "black")) %>%
   # campsite forest
   addPolygons(data = white_pine, weight = 1, color = "red") %>%
   # parking lot marker
   addMarkers(data = parking_sf, popup = ~point) %>%
   # draw parking lot buffer zone
-  addPolygons(data = parking_bf, fillColor = "transparent") %>%
+  addPolygons(data = parking_bf, color = "green", fillColor = "transparent") %>%
   # add map tool that will display coordinates of point that mouse is over
   addMouseCoordinates()
 
