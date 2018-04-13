@@ -73,7 +73,7 @@ leaflet() %>%
   addTiles() %>%
   addPolylines(data = macleish_layers[["boundary"]], weight = 1, color = "black") %>%
   addPolygons(data = forests, weight = 1, color = "green", popup = ~forest_type) %>%
-  addMarkers(data = campsites_sf, popup = ~point, labelOptions = labelOptions(style = ("color" = "red")))
+  addMarkers(data = campsites_sf, popup = ~point)
 
 # Create dataset that will only have that type of forest
 white_pine <- forests %>%
@@ -128,6 +128,25 @@ challenge_bf <- macleish_layers[["challenge_courses"]] %>%
   st_transform(4326)
 ```
 
+```{r}
+# Our proposed campsites
+our_camps_pt <- tribble(
+  ~point, ~lat, ~lon,
+  "Campsite A", -72.67578, 42.45426,
+  "Campsite B", -72.6857, 42.45413,
+  "Bonus Camp", -72.67366, 42.44957
+)
+our_camps_sf <- our_camps_pt %>%
+  st_as_sf(coords = c("lat", "lon")) %>%
+  st_set_crs(4326)
+
+our_camps_bf <- our_camps_sf %>%
+  st_transform(proj4_aea) %>%
+  st_buffer(dist = 3) %>%
+  st_transform(4326)
+
+```
+
 
 ```{r}
 # Make a leaflet map with green zones being our targets and pink/red zones are our avoid areas
@@ -150,13 +169,17 @@ map <- leaflet() %>%
   # draw challenge course buffer zones
   addPolygons(data = challenge_bf, color = "pink", fillColor = "transparent") %>%
   # campsite markers
-  addMarkers(data = campsites_sf, popup = ~point, labelOptions = labelOptions(color = "black")) %>%
+  addMarkers(data = campsites_sf, popup = ~point) %>%
   # campsite forest
   addPolygons(data = white_pine, weight = 1, color = "red") %>%
   # parking lot marker
   addMarkers(data = parking_sf, popup = ~point) %>%
   # draw parking lot buffer zone
   addPolygons(data = parking_bf, color = "green", fillColor = "transparent") %>%
+  # proposed campsite markers
+  addMarkers(data = our_camps_sf, popup = ~point) %>%
+  # draw approximate size of campsite
+  addPolygons(data = our_camps_bf, color = "blue") %>%
   # add map tool that will display coordinates of point that mouse is over
   addMouseCoordinates()
 
