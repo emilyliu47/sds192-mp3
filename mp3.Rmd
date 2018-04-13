@@ -136,19 +136,22 @@ our_camps_pt <- tribble(
   "Campsite B", -72.6857, 42.45413,
   "Bonus Camp", -72.67366, 42.44957
 )
+# Create campsite shapefile
 our_camps_sf <- our_camps_pt %>%
   st_as_sf(coords = c("lat", "lon")) %>%
   st_set_crs(4326)
 
+# Create buffer zones to show approx. campsite area
 our_camps_bf <- our_camps_sf %>%
   st_transform(proj4_aea) %>%
-  st_buffer(dist = 3) %>%
+  st_buffer(dist = 6) %>%
   st_transform(4326)
 
 ```
 
 
 ```{r}
+icons <- awesomeIcons(icon = 'glyphicon glyphicon-tent', markerColor = 'orange')
 # Make a leaflet map with green zones being our targets and pink/red zones are our avoid areas
 map <- leaflet() %>%
   addTiles() %>%
@@ -177,9 +180,9 @@ map <- leaflet() %>%
   # draw parking lot buffer zone
   addPolygons(data = parking_bf, color = "green", fillColor = "transparent") %>%
   # proposed campsite markers
-  addMarkers(data = our_camps_sf, popup = ~point) %>%
+  addAwesomeMarkers(data = our_camps_sf, popup = ~point, icon=icons) %>%
   # draw approximate size of campsite
-  addPolygons(data = our_camps_bf, color = "blue") %>%
+  addPolygons(data = our_camps_bf, color = "orange") %>%
   # add map tool that will display coordinates of point that mouse is over
   addMouseCoordinates()
 
