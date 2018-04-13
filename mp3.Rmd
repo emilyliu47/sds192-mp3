@@ -57,7 +57,7 @@ Campsite requirements:
 campsites_pt <- tribble(
   ~point, ~lat, ~lon,
   "Group Campsite", -72.678154, 42.450976,
-  "Remote Campsite", -72.674732, 42.458570
+  "Remote Campsite", -72.679581, 42.458549
 )
 # Convert campsite points to shapefile
 campsites_sf <- campsites_pt %>%
@@ -75,9 +75,12 @@ leaflet() %>%
   addPolygons(data = forests, weight = 1, color = "green", popup = ~forest_type) %>%
   addMarkers(data = campsites_sf, popup = ~point)
 
-# Create dataset that will only have that type of forest
-white_pine <- forests %>%
-  filter(forest_type == "Old Field White Pine Forest")
+# Create dataset that will only have those types of forests
+pine_maple <- forests %>%
+  filter(forest_type == "Old Field White Pine Forest" | forest_type == "Sugar Maple Forest")
+# Some desirable forests to put campsites near
+oak <- forests %>%
+  filter(forest_type == "Red Oak Forest" | forest_type == "Red Oak-Hemlock Forest")
 ```
 
 The group campsite is in the Old Field White Pine Forest. The remote campsite is outside the Macleish boundary and there is no forest data for it.
@@ -160,7 +163,7 @@ map <- leaflet() %>%
   # macleish streams
   addPolylines(data = macleish_layers[["streams"]], weight = 1, color = "blue") %>%
   # contour lines
-  addPolylines(data = macleish_layers[["contours_3m"]], weight = 2, color = "black") %>%
+  addPolylines(data = macleish_layers[["contours_3m"]], weight = 1, color = "black") %>%
   # macleish wetlands
   addPolygons(data = macleish_layers[["wetlands"]], color = "blue", opacity = 0.5) %>%
   # draw stream buffer zones
@@ -174,7 +177,9 @@ map <- leaflet() %>%
   # campsite markers
   addMarkers(data = campsites_sf, popup = ~point) %>%
   # campsite forest
-  addPolygons(data = white_pine, weight = 1, color = "red") %>%
+  addPolygons(data = pine_maple, weight = 1, color = "red") %>%
+  # good forests to be in
+  addPolygons(data = oak, weight = 1, color = "green") %>%
   # parking lot marker
   addMarkers(data = parking_sf, popup = ~point) %>%
   # draw parking lot buffer zone
@@ -188,3 +193,28 @@ map <- leaflet() %>%
 
 map  
 ```
+
+
+```{r}
+# Map of attractions around the campsites
+map2 <- leaflet() %>%
+  addTiles() %>%
+  # macleish boundary
+  addPolylines(data = macleish_layers[["boundary"]], color = "black", weight = 1, opacity = 0.5) %>%
+  # macleish streams
+  addPolylines(data = macleish_layers[["streams"]], color = "blue", weight = 2) %>%
+  # macleish wetlands
+  addPolygons(data = macleish_layers[["wetlands"]], weight = 2) %>%
+  # macleish landmarks
+  addMarkers(data = macleish_layers[["landmarks"]], popup = ~Label) %>%
+  # parking lot marker
+  addMarkers(data = parking_sf, popup = ~name)
+map2
+```
+
+
+
+
+
+
+
