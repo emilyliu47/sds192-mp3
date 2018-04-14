@@ -67,7 +67,7 @@ campsites_sf <- campsites_pt %>%
 ```
 
 ```{r}
-# Visually figuring out the forest that the campsite is in
+# Visually figuring out the forests that the campsites are in
 forests <- macleish_layers[["forests"]] %>%
   rename(forest_type = Sheet1__Na)
 
@@ -82,7 +82,7 @@ pine_maple <- forests %>%
   filter(forest_type == "Old Field White Pine Forest" | forest_type == "Sugar Maple Forest")
 # Some desirable forests to put campsites near
 oak <- forests %>%
-  filter(forest_type == "Red Oak Forest" | forest_type == "Red Oak-Hemlock Forest")
+  filter(forest_type == "Red Oak Forest" | forest_type == "Red Oak-Hemlock Forest" | forest_type == "Abandoned Pasture")
 ```
 
 The group campsite is in the Old Field White Pine Forest. The remote campsite is outside the Macleish boundary and there is no forest data for it.
@@ -135,11 +135,16 @@ challenge_bf <- macleish_layers[["challenge_courses"]] %>%
 
 ```{r}
 # Our proposed campsites
+# our_camps_pt <- tribble(
+#   ~point, ~lat, ~lon,
+#   "Campsite A", -72.67578, 42.45426,
+#   "Campsite B", -72.6857, 42.45413,
+#   "Bonus Camp", -72.67366, 42.44957
+# )
 our_camps_pt <- tribble(
   ~point, ~lat, ~lon,
-  "Campsite A", -72.67578, 42.45426,
-  "Campsite B", -72.6857, 42.45413,
-  "Bonus Camp", -72.67366, 42.44957
+  "Campsite A", -72.68207, 42.44893,
+  "Campsite B", -72.67990, 42.44741
 )
 # Create campsite shapefile
 our_camps_sf <- our_camps_pt %>%
@@ -184,6 +189,12 @@ map <- leaflet() %>%
   addPolygons(data = oak, weight = 1, color = "green", group = "Forests") %>%
   # parking lot marker
   addMarkers(data = parking_sf, popup = ~point, group = "Parking") %>%
+  addPolygons(data = oak, weight = 1, color = "green") %>%
+  # macleish forests
+  addPolygons(data = forests, weight = 1, color = "green", fillColor = "transparent", popup = ~forest_type) %>%
+  addPolylines(data = macleish_layers[["trails"]], weight = 2, color = ~color, label = ~name) %>%
+  # parking lot makrer
+  addMarkers(data = parking_sf, popup = ~point) %>%
   # draw parking lot buffer zone
   addPolygons(data = parking_bf, color = "green", fillColor = "transparent", group = "Parking") %>%
   # proposed campsite markers
@@ -209,17 +220,19 @@ map2 <- leaflet() %>%
   addPolylines(data = macleish_layers[["streams"]], color = "blue", weight = 2) %>%
   # macleish wetlands
   addPolygons(data = macleish_layers[["wetlands"]], weight = 2) %>%
+  # macleish forests
+  addPolygons(data = forests, weight = 1, color = "transparent", fillColor = "transparent", popup = ~forest_type) %>%
+  # macleish trails
+  addPolylines(data = macleish_layers[["trails"]], weight = 2, color = ~color, label = ~name) %>%
   # macleish landmarks
   addMarkers(data = macleish_layers[["landmarks"]], popup = ~Label) %>%
   # parking lot marker
   addMarkers(data = parking_sf, popup = ~point) %>%
-  addScaleBar()
+  addScaleBar()%>%
+  addMarkers(data = parking_sf, popup = ~point) %>% # proposed campsite markers
+  addAwesomeMarkers(data = our_camps_sf, popup = ~point, icon=icons) %>%
+  # draw approximate size of campsite
+  addPolygons(data = our_camps_bf, color = "orange")
+
 map2
 ```
-
-
-
-
-
-
-
