@@ -2,11 +2,13 @@
 title: "Mini-Project 3"
 author: "Emily Liu, Karina Lieb, and Alexis Kilayko"
 date: "April 9, 2018"
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
 ---
 The mapview package is needed.
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 # Install package
 #install.packages("mapview")
 
@@ -147,7 +149,7 @@ our_camps_sf <- our_camps_pt %>%
 # Create buffer zones to show approx. campsite area
 our_camps_bf <- our_camps_sf %>%
   st_transform(proj4_aea) %>%
-  st_buffer(dist = 6) %>%
+  st_buffer(dist = 3) %>%
   st_transform(4326)
 
 ```
@@ -159,38 +161,40 @@ icons <- awesomeIcons(icon = 'glyphicon glyphicon-tent', markerColor = 'orange')
 map <- leaflet() %>%
   addTiles() %>%
   # macleish boundary lines
-  addPolylines(data = macleish_layers[["boundary"]], weight = 1) %>%
+  addPolylines(data = macleish_layers[["boundary"]], weight = 1, group = "Boundary") %>%
   # macleish streams
-  addPolylines(data = macleish_layers[["streams"]], weight = 1, color = "blue") %>%
+  addPolylines(data = macleish_layers[["streams"]], weight = 1, color = "blue", group = "Streams") %>%
   # contour lines
-  addPolylines(data = macleish_layers[["contours_3m"]], weight = 1, color = "black") %>%
+  addPolylines(data = macleish_layers[["contours_3m"]], weight = 1, color = "black", group = "Contours") %>%
   # macleish wetlands
-  addPolygons(data = macleish_layers[["wetlands"]], color = "blue", opacity = 0.5) %>%
+  addPolygons(data = macleish_layers[["wetlands"]], color = "blue", opacity = 0.5, group = "Wetlands") %>%
   # draw stream buffer zones
-  addPolygons(data = streams_bf, color = "lightgreen", fillColor = "transparent") %>%
+  addPolygons(data = streams_bf, color = "lightgreen", fillColor = "transparent", group = "Streams") %>%
   # draw wetlands buffer zones
-  addPolygons(data = wetlands_bf, color = "lightgreen", fillColor = "transparent") %>%
+  addPolygons(data = wetlands_bf, color = "lightgreen", fillColor = "transparent", group = "Wetlands") %>%
   # draw research buffer zones
-  addPolygons(data = research_bf, color = "pink", fillColor = "transparent") %>%
+  addPolygons(data = research_bf, color = "pink", fillColor = "transparent", group = "Research Area") %>%
   # draw challenge course buffer zones
-  addPolygons(data = challenge_bf, color = "pink", fillColor = "transparent") %>%
+  addPolygons(data = challenge_bf, color = "pink", fillColor = "transparent", group = "Challenge Course") %>%
   # campsite markers
-  addMarkers(data = campsites_sf, popup = ~point) %>%
+  addMarkers(data = campsites_sf, popup = ~point, group = "Campsites") %>%
   # campsite forest
-  addPolygons(data = pine_maple, weight = 1, color = "red") %>%
+  addPolygons(data = pine_maple, weight = 1, color = "red", group = "Forests") %>%
   # good forests to be in
-  addPolygons(data = oak, weight = 1, color = "green") %>%
+  addPolygons(data = oak, weight = 1, color = "green", group = "Forests") %>%
   # parking lot marker
-  addMarkers(data = parking_sf, popup = ~point) %>%
+  addMarkers(data = parking_sf, popup = ~point, group = "Parking") %>%
   # draw parking lot buffer zone
-  addPolygons(data = parking_bf, color = "green", fillColor = "transparent") %>%
+  addPolygons(data = parking_bf, color = "green", fillColor = "transparent", group = "Parking") %>%
   # proposed campsite markers
-  addAwesomeMarkers(data = our_camps_sf, popup = ~point, icon=icons) %>%
+  addAwesomeMarkers(data = our_camps_sf, popup = ~point, icon=icons, group = "Campsites") %>%
   # draw approximate size of campsite
-  addPolygons(data = our_camps_bf, color = "orange") %>%
+  addPolygons(data = our_camps_bf, color = "orange", group = "Campsites") %>%
   # add map tool that will display coordinates of point that mouse is over
-  addMouseCoordinates()
-
+  addMouseCoordinates() %>%
+#adding layer controls
+  addLayersControl(overlayGroups = c("Boundary", "Streams", "Contours", "Wetlands", "Research Area", "Challenge Course", "Forests", "Parking", "Campsites"), options = layersControlOptions(collapsed = FALSE)) %>%
+  addScaleBar()
 map  
 ```
 
@@ -208,7 +212,8 @@ map2 <- leaflet() %>%
   # macleish landmarks
   addMarkers(data = macleish_layers[["landmarks"]], popup = ~Label) %>%
   # parking lot marker
-  addMarkers(data = parking_sf, popup = ~name)
+  addMarkers(data = parking_sf, popup = ~point) %>%
+  addScaleBar()
 map2
 ```
 
